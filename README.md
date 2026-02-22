@@ -1,5 +1,7 @@
 # Teclado
-
+## Configuración del entorno de desarrollo
+Para configurar el entorno de desarrollo, es necesario instalar las siguientes dependencias;
+Primero actualizas tus paquetes, si ya está hecho, es opcional
 
 ```bash
 sudo pacman -Syu
