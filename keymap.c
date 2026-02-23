@@ -241,7 +241,6 @@ void housekeeping_task_user(void) {
 }
 
 bool process_record_user(uint16_t keycode, keyrecord_t* record) {
-    // --- LÓGICA ORIGINAL (Mantiene el OLED y la sincronización) ---
     if (record->event.pressed) {
         // master : store keycode to sent to the other side to be process_key
         last_keycode.keycode = keycode;
@@ -251,18 +250,17 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
         process_key(keycode);
     }
 
-    // --- TUS MACROS (Añadidos aquí) ---
     switch (keycode) {
         case VIM_G:
             if (record->event.pressed) {
                 tap_code(KC_ESC);
                 wait_ms(15);
-                tap_code16(KC_COLN); // Los dos puntos :
+                tap_code16(KC_COLN);
                 tap_code(KC_W);
-                tap_code16(KC_EXLM); // El signo !
+                tap_code16(KC_EXLM);
                 tap_code(KC_ENT);
             }
-            return false; // 'false' para que no envíe nada más al PC
+            return false; //
 
         case NEOTREE:
             if (record->event.pressed) {
@@ -312,7 +310,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
             return false;
     }
 
-    return true; // Continua procesando el resto de teclas normales
+    return true;
 }
 
 #if IS_LEFT
