@@ -19,7 +19,15 @@
 
 // right side
 #include "ring.h"
-
+enum custom_keycodes {
+    VIM_G = SAFE_RANGE,
+    NEOTREE,
+    FOUND,
+    TMUX_SPLIT,
+    TMUX_LEFT,
+    COPIAR,
+    QUIT
+};
 // clang-format off
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 /* QWERTY
@@ -46,7 +54,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 /* LOWER
  * ,-----------------------------------------.                    ,-----------------------------------------.
- * |      |      |      |      |      |      |                    |      |      |      |      |      |      |
+ * | :w!  |  :q  |Ctrl-n|      |      |      |                    |      |      |      |      |      |      |
  * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
  * |  F1  |  F2  |  F3  |  F4  |  F5  |  F6  |                    |  F7  |  F8  |  F9  | F10  | F11  | F12  |
  * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
@@ -59,7 +67,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *                   `----------------------------'           '------''--------------------'
  */
     [_LOWER] =  LAYOUT(
-  _______, _______, _______, _______, _______, _______,                   _______, _______, _______,_______, _______, _______,
+  VIM_G,QUIT , NEOTREE, _______, _______, _______,                   _______, _______, _______,_______, _______, _______,
   KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,                     KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  KC_F12,
   KC_GRV, KC_EXLM, KC_AT,   KC_HASH, KC_DLR,  KC_PERC,                   KC_CIRC, KC_AMPR, KC_ASTR, KC_LPRN, KC_RPRN, KC_TILD,
   _______, _______, _______, _______, _______, _______, _______, _______, XXXXXXX, KC_UNDS, KC_PLUS, KC_LCBR, KC_RCBR, KC_PIPE,
@@ -67,7 +75,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 /* RAISE
  * ,-----------------------------------------.                    ,-----------------------------------------.
- * |      |      |      |      |      |      |                    |      |      |      |INICIO|  FIN |      |
+ * |      |      |      |      |      |      |                    |      |      |      |INICIO|  FIN |ALTGR |
  * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
  * |   `  |   1  |   2  |   3  |   4  |   5  |                    |   6  |   7  |   8  |   9  |   0  |      |
  * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
@@ -80,7 +88,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *                   `----------------------------'           '------''--------------------'
  */
     [_RAISE] = LAYOUT(
-  _______, _______, _______, _______, _______, _______,                     _______, _______, _______, KC_HOME, KC_END,  _______,
+  _______, _______, _______, _______, _______, _______,                     _______, _______, _______, KC_HOME, KC_END,  KC_RALT,
   KC_GRV,  KC_1,    KC_2,    KC_3,    KC_4,    KC_5,                        KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    _______,
   KC_F1,  KC_F2,    KC_F3,   KC_F4,   KC_F5,   KC_F6,                       XXXXXXX, KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, XXXXXXX,
   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  KC_F12,   _______, _______,  KC_PLUS, KC_MINS, KC_EQL,  KC_LBRC, KC_RBRC, KC_BSLS,
@@ -233,6 +241,7 @@ void housekeeping_task_user(void) {
 }
 
 bool process_record_user(uint16_t keycode, keyrecord_t* record) {
+    // --- LÓGICA ORIGINAL (Mantiene el OLED y la sincronización) ---
     if (record->event.pressed) {
         // master : store keycode to sent to the other side to be process_key
         last_keycode.keycode = keycode;
@@ -241,7 +250,69 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
         // gui process the input
         process_key(keycode);
     }
-    return true;
+
+    // --- TUS MACROS (Añadidos aquí) ---
+    switch (keycode) {
+        case VIM_G:
+            if (record->event.pressed) {
+                tap_code(KC_ESC);
+                wait_ms(15);
+                tap_code16(KC_COLN); // Los dos puntos :
+                tap_code(KC_W);
+                tap_code16(KC_EXLM); // El signo !
+                tap_code(KC_ENT);
+            }
+            return false; // 'false' para que no envíe nada más al PC
+
+        case NEOTREE:
+            if (record->event.pressed) {
+                tap_code(KC_ESC);
+                wait_ms(10);
+                tap_code16(LCTL(KC_N));
+            }
+            return false;
+
+        case TMUX_SPLIT:
+            if (record->event.pressed) {
+                tap_code16(LCTL(KC_B));
+                wait_ms(10);
+                tap_code16(KC_PERC);
+            }
+            return false;
+
+        case TMUX_LEFT:
+            if (record->event.pressed) {
+                tap_code16(LCTL(KC_B));
+                wait_ms(10);
+                tap_code(KC_LEFT);
+            }
+            return false;
+
+        case COPIAR:
+            if (record->event.pressed) {
+                tap_code(KC_ESC);
+                tap_code16(KC_DQUO); // Comilla doble "
+                tap_code16(KC_PLUS);
+                tap_code(KC_Y);
+            }
+            return false;
+
+        case FOUND:
+            if (record->event.pressed) {
+                tap_code(KC_ESC);
+                tap_code16(LCTL(KC_F));
+            }
+            return false;
+
+        case QUIT:
+            if (record->event.pressed) {
+                tap_code(KC_ESC);
+                SEND_STRING(":q" SS_TAP(X_ENTER));
+            }
+            return false;
+    }
+
+    return true; // Continua procesando el resto de teclas normales
 }
 
 #if IS_LEFT
